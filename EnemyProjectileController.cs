@@ -19,13 +19,17 @@ public class EnemyControllerProjectileController : MonoBehaviour
    
    public BoxCollider roamingArea; // Reference to the BoxCollider defining the roaming area
 
+   public Transform animatorObject; // Reference to the Transform that contains the Animator component
+
     private Transform player;
     private Vector3 randomDirection;
     private float changeDirectionTime = 2.0f;
     private float timer;
     private float shootingTimer;
 
-    private void Start()
+     private Animator animator; // Reference to the Animator component
+
+        private void Start()
     {
         timer = changeDirectionTime;
         randomDirection = GetRandomDirection();
@@ -37,7 +41,26 @@ public class EnemyControllerProjectileController : MonoBehaviour
         {
             player = playerObject.transform;
         }
+
+        // Get the Animator component from the specified Transform
+        if (animatorObject != null)
+        {
+            animator = animatorObject.GetComponent<Animator>();
+            if (animator != null)
+            {
+                Debug.Log("Animator component found on the specified object.");
+            }
+            else
+            {
+                Debug.LogError("Animator component not found on the specified object!");
+            }
+        }
+        else
+        {
+            Debug.LogError("Animator object is not assigned!");
+        }
     }
+
 
     private void Update()
     {
@@ -61,6 +84,11 @@ public class EnemyControllerProjectileController : MonoBehaviour
                 Vector3 direction = (player.position - transform.position).normalized;
                 transform.position = ClampPositionToRoamingArea(transform.position + direction * approachSpeed * Time.deltaTime);
 
+              // Rotate to face the player
+               // RotateToFacePlayer(direction);
+               RotateToFaceDirection(direction);
+
+
                 // Shoot at the player
                 shootingTimer -= Time.deltaTime;
                 if (shootingTimer <= 0)
@@ -81,6 +109,9 @@ public class EnemyControllerProjectileController : MonoBehaviour
 
                 Vector3 newPosition = transform.position + randomDirection * speed * Time.deltaTime;
                 transform.position = ClampPositionToRoamingArea(newPosition);
+
+                         // Rotate to face the random direction
+                RotateToFaceDirection(randomDirection);
             }
         }
         else
@@ -95,6 +126,10 @@ public class EnemyControllerProjectileController : MonoBehaviour
 
             Vector3 newPosition = transform.position + randomDirection * speed * Time.deltaTime;
             transform.position = ClampPositionToRoamingArea(newPosition);
+
+                        // Rotate to face the random direction
+            RotateToFaceDirection(randomDirection);
+
         }
     }
 
@@ -112,7 +147,34 @@ public class EnemyControllerProjectileController : MonoBehaviour
         {
             projectileScript.SetDirection(direction);
         }
+
+               // Trigger the attack animation
+        if (animator != null)
+        {
+            
+            animator.SetTrigger("Attack");
+            Debug.Log("Attack animation trigger.");
+           // animator.SetTrigger("Reset");
+
+           // Reset the attack trigger
+            //StartCoroutine(ResetAttackTrigger());
+        } 
+
+       
     }
+
+ /*        private void RotateToFacePlayer(Vector3 direction)
+    {
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+    } */
+
+    private void RotateToFaceDirection(Vector3 direction)
+{
+    Quaternion lookRotation = Quaternion.LookRotation(direction);
+    transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+}
+
 
     private Vector3 GetRandomDirection()
     {
@@ -145,6 +207,16 @@ public class EnemyControllerProjectileController : MonoBehaviour
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireCube(roamingArea.bounds.center, roamingArea.bounds.size);
+        }
+    }
+
+        // This method will be called by the animation event to reset the trigger
+    public void ResetAttackTrigger()
+    {
+        if (animator != null)
+        {
+            Debug.Log("Resetting Attack trigger.");
+            animator.ResetTrigger("Attack");
         }
     }
 }
