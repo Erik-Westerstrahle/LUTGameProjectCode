@@ -5,59 +5,72 @@ using System;
 
 public class collectible_script : MonoBehaviour
 {
-    // Start is called before the first frame update
-/*     void Start()
-    {
-         ResetCollectibles();
-    } */
     public static event Action OnCollected;
-         public static event Action OnAllCollected;
+    public static event Action OnAllCollected;
 
-         public static int total;
-         private static int collectedCount;
+    public static int total;
+    private static int collectedCount;
 
-    
+    private static bool levelInitialized = false;
+    private static int previousTotal = 0; // Store the previous total to detect doubling
 
-   // void Awake() => total++; 
-
-   void Awake()
+    void Awake()
     {
-        total++;
+        Debug.Log("Collectible Awake called.");
+        
     }
 
-    // Update is called once per frame
-    void Update()
+    void Start()
     {
-      //  transform.localRotation = Quaternion.Euler(90f, Time.time * 100f, 0);
-    }
+        Debug.Log("Collectible OnEnable called.");
 
-/*     void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
+        if (!levelInitialized)
         {
-            OnCollected?.Invoke();
-            Destroy(gameObject);
+            Debug.Log("Level not initialized. Resetting collectibles.");
+            ResetCollectibles(); // Reset counts when the level starts
+            levelInitialized = true; // Ensure this is only done once per level load
         }
-    } */
+
+     
+
+        
+        total++; // Increment total count for each collectible instantiated
+        previousTotal = total; // Store the current total for future checks
+        
+        
+        Debug.Log($"Collectible instantiated. Total now: {total}");
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
+            Debug.Log("Player collected a collectible.");
             OnCollected?.Invoke();
             Destroy(gameObject);
 
             collectedCount++;
+            Debug.Log($"Collected count: {collectedCount} / Total: {total}");
             if (collectedCount >= total)
             {
+                Debug.Log("All collectibles collected.");
                 OnAllCollected?.Invoke();
             }
         }
     }
 
-        public static void ResetCollectibles()
+    public static void ResetCollectibles()
     {
-         Debug.Log("Resetting collectible counts");
+        Debug.Log("Resetting collectible counts. Before reset - Total: " + total + ", Collected: " + collectedCount);
         total = 0;
         collectedCount = 0;
+    
+        Debug.Log("After reset - Total: " + total + ", Collected: " + collectedCount);
+    }
+
+    public static void ResetInitialization()
+    {
+        Debug.Log("Resetting level initialization flag.");
+        levelInitialized = false;
     }
 }

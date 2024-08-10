@@ -1,26 +1,29 @@
-    using UnityEngine;
-    using UnityEngine.SceneManagement;
-    using System.Collections; 
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
-    public class LevelManager : MonoBehaviour
+public class LevelManager : MonoBehaviour
+{
+    public static LevelManager Instance { get; private set; }
+
+    private Animator animator;
+
+    private void Awake()
     {
-         public static LevelManager Instance { get; private set; }
+        Debug.Log("LevelManager Awake called.");
 
-        private Animator animator;
-
-        private void Awake()
+        if (Instance == null)
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Debug.Log("LevelManager instance created.");
+        }
+        else
+        {
+            Debug.Log("LevelManager instance already exists. Destroying duplicate.");
+            Destroy(gameObject);
+        }
 
-               // Get the Animator component from the Crossfade child object
         animator = GetComponentInChildren<Animator>();
         if (animator != null)
         {
@@ -30,11 +33,10 @@
         {
             Debug.LogError("Animator component not found!");
         }
-        }
+    }
 
-            private void Start()
+    private void Start()
     {
-        // Play the start animation when the level starts
         if (animator != null)
         {
             Debug.Log("Triggering Start animation.");
@@ -42,62 +44,55 @@
         }
     }
 
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    public void LoadNextLevel()
     {
-        // Play the start animation when the new level is loaded
-        if (animator != null)
-        {
-            animator.SetTrigger("Start");
-        }
-    }
+        Debug.Log("Loading next level.");
 
+        collectible_script.ResetInitialization(); // Reset initialization flag
+        collectible_script.ResetCollectibles(); // Reset counts
 
-        public void LoadNextLevel()
-        {
-            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-           //  transition.SetTrigger("Start")
-            int nextSceneIndex = currentSceneIndex + 1;
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextSceneIndex = currentSceneIndex + 1;
 
-            animator.SetTrigger("Start");
-
-            
+        animator.SetTrigger("Start");
 
         Debug.Log($"Attempting to load next level: {nextSceneIndex}");
-
-       
 
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             Debug.Log("Valid next level. Starting coroutine to load after animation.");
-             animator.SetTrigger("Start");
             StartCoroutine(LoadSceneAfterAnimation(nextSceneIndex));
         }
         else
         {
             Debug.Log("No more levels to load. End of game.");
-            // Handle end of game logic here
         }
-        }
+    }
 
-        public void RestartLevel()
-        {
-            collectible_script.ResetCollectibles();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            
-        }
+    public void RestartLevel()
+    {
+        Debug.Log("Restarting level.");
 
-        public void LoadLevel(string levelName)
-        {
-            collectible_script.ResetCollectibles();
-            SceneManager.LoadScene(levelName);
-            StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetSceneByName(levelName).buildIndex));
-            
-        }
+        collectible_script.ResetInitialization(); // Ensure collectible counts are reset on level restart
+        collectible_script.ResetCollectibles();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void LoadLevel(string levelName)
+    {
+        Debug.Log($"Loading level: {levelName}");
+
+        collectible_script.ResetInitialization(); // Reset initialization flag
+        
+        SceneManager.LoadScene(levelName);
+        StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetSceneByName(levelName).buildIndex));
+        collectible_script.ResetCollectibles(); // Reset counts
+    }
 
     private IEnumerator LoadSceneAfterAnimation(int sceneIndex)
     {
         Debug.Log("Starting LoadSceneAfterAnimation coroutine.");
-        
+
         if (animator != null)
         {
             Debug.Log("Waiting for end animation to finish.");
@@ -110,5 +105,5 @@
 
         Debug.Log($"Loading scene index: {sceneIndex}");
         SceneManager.LoadScene(sceneIndex);
-    } 
     }
+}

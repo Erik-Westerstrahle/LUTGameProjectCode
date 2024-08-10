@@ -50,10 +50,18 @@ private void Start()
        StartCoroutine(DamageEffect()); // Trigger the damage effect
     }
 
+        public void ResetHealth()
+    {
+        currentHealth = maxHealth;
+        UpdateHearts();
+        Debug.Log("Health reset to max.");
+    }
+
     private void Die()
     {
         Debug.Log("Player has died.");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+          collectible_script.ResetCollectibles(); // Reset counts
     }
 
     private void UpdateHearts()
@@ -89,7 +97,7 @@ private void Start()
         {
             elapsedTime += Time.deltaTime;
             vignette.intensity.value = Mathf.Lerp(0f, maxIntensity, elapsedTime / (damageEffectDuration / 2f));
-            Debug.Log("Vignette intensity (fade in): " + vignette.intensity.value);
+          //  Debug.Log("Vignette intensity (fade in): " + vignette.intensity.value);
             yield return null;
         }
 
@@ -100,7 +108,7 @@ private void Start()
         {
             elapsedTime += Time.deltaTime;
             vignette.intensity.value = Mathf.Lerp(maxIntensity, 0f, elapsedTime / (damageEffectDuration / 2f));
-            Debug.Log("Vignette intensity (fade out): " + vignette.intensity.value);
+          //  Debug.Log("Vignette intensity (fade out): " + vignette.intensity.value);
             yield return null;
         }
 
