@@ -39,6 +39,8 @@ public class EnemyController : MonoBehaviour
             }
         }
 
+        Vector3 movementDirection = Vector3.zero;
+
         if (player != null)
         {
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
@@ -46,8 +48,8 @@ public class EnemyController : MonoBehaviour
             if (distanceToPlayer <= detectionRadius)
             {
                 // Move towards the player
-                Vector3 direction = (player.position - transform.position).normalized;
-                transform.position += direction * approachSpeed * Time.deltaTime;
+                movementDirection = (player.position - transform.position).normalized;
+                transform.position += movementDirection * approachSpeed * Time.deltaTime;
             }
             else
             {
@@ -59,6 +61,7 @@ public class EnemyController : MonoBehaviour
                     timer = changeDirectionTime;
                 }
 
+                movementDirection = randomDirection;
                 transform.position += randomDirection * speed * Time.deltaTime;
             }
         }
@@ -72,7 +75,15 @@ public class EnemyController : MonoBehaviour
                 timer = changeDirectionTime;
             }
 
+            movementDirection = randomDirection;
             transform.position += randomDirection * speed * Time.deltaTime;
+        }
+
+        // Rotate the enemy to face the movement direction
+        if (movementDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * speed);
         }
     }
 
