@@ -7,12 +7,22 @@ public class EnemyController : MonoBehaviour
     public float speed = 2.0f;
     public float detectionRadius = 10.0f;
     public float approachSpeed = 1.0f;
+    public float chargeSpeed = 5.0f; // Speed during the charge
+    public float chargeDuration = 1.0f; // Duration of the charge
+    public float chargeCooldown = 2.0f; // Cooldown before the next charge
     public string playerTag = "Player"; // Make sure your player is tagged as "Player"
+
+        public GameObject chargeMesh; // Reference to the mesh that will become visible during the charge
 
     private Transform player;
     private Vector3 randomDirection;
     private float changeDirectionTime = 2.0f;
     private float timer;
+
+    private bool isCharging = false;
+    private float chargeTimer = 0f;
+    private float cooldownTimer = 0f;
+    private bool playerInRadius = false;  // New flag to track if the player is in radius
 
     private void Start()
     {
@@ -25,6 +35,13 @@ public class EnemyController : MonoBehaviour
         {
             player = playerObject.transform;
         }
+
+                // Ensure the charge mesh is initially invisible
+        if (chargeMesh != null)
+        {
+            chargeMesh.SetActive(false);
+        }
+
     }
 
     private void Update()
@@ -47,13 +64,30 @@ public class EnemyController : MonoBehaviour
 
             if (distanceToPlayer <= detectionRadius)
             {
-                // Move towards the player
-                movementDirection = (player.position - transform.position).normalized;
-                transform.position += movementDirection * approachSpeed * Time.deltaTime;
+                if (!playerInRadius || cooldownTimer <= 0f)  // Trigger charge when player enters or cooldown is over
+                {
+                    playerInRadius = true;
+                    StartCharge();
+                }
+
+                if (isCharging)
+                {
+                    ChargeTowardsPlayer();
+                }
+                else
+                {
+                    // Move towards the player normally if not charging
+                    movementDirection = (player.position - transform.position).normalized;
+                    transform.position += movementDirection * approachSpeed * Time.deltaTime;
+                }
             }
             else
             {
+                // Player left the detection radius
+                playerInRadius = false;
+
                 // Random movement
+                cooldownTimer = Mathf.Max(cooldownTimer - Time.deltaTime, 0f);
                 timer -= Time.deltaTime;
                 if (timer <= 0)
                 {
@@ -68,6 +102,7 @@ public class EnemyController : MonoBehaviour
         else
         {
             // Random movement if player is not found
+            cooldownTimer = Mathf.Max(cooldownTimer - Time.deltaTime, 0f);
             timer -= Time.deltaTime;
             if (timer <= 0)
             {
@@ -80,10 +115,53 @@ public class EnemyController : MonoBehaviour
         }
 
         // Rotate the enemy to face the movement direction
-        if (movementDirection != Vector3.zero)
+        if (movementDirection != Vector3.zero && !isCharging)
         {
             Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * speed);
+        }
+    }
+
+    private void StartCharge()
+    {
+        if (cooldownTimer <= 0f)
+        {
+            // Start charging towards the player
+            isCharging = true;
+            chargeTimer = chargeDuration;
+            cooldownTimer = chargeCooldown;  // Start cooldown immediately after charge starts
+
+                // Make the charge mesh visible
+            if (chargeMesh != null)
+            {
+                chargeMesh.SetActive(true);
+            }
+        }
+    }
+
+    private void ChargeTowardsPlayer()
+    {
+        if (player == null) return;
+
+        chargeTimer -= Time.deltaTime;
+
+        // Move towards the player with charge speed
+        Vector3 chargeDirection = (player.position - transform.position).normalized;
+        transform.position += chargeDirection * chargeSpeed * Time.deltaTime;
+
+        // Rotate to face the player
+        Quaternion targetRotation = Quaternion.LookRotation(chargeDirection);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * chargeSpeed);
+
+        if (chargeTimer <= 0f)
+        {
+            isCharging = false;
+
+                        // Make the charge mesh invisible
+            if (chargeMesh != null)
+            {
+                chargeMesh.SetActive(false);
+            }
         }
     }
 
