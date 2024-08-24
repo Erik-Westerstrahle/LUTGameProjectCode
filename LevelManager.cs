@@ -8,6 +8,8 @@ public class LevelManager : MonoBehaviour
 
     private Animator animator;
 
+      public bool playAnimationOnSceneLoad = false;
+
     private void Awake()
     {
         Debug.Log("LevelManager Awake called.");
@@ -37,7 +39,7 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        if (animator != null)
+         if (playAnimationOnSceneLoad && animator != null)
         {
             Debug.Log("Triggering Start animation.");
             animator.SetTrigger("Start");
