@@ -37,7 +37,7 @@ public class GroundEnemy : MonoBehaviour
         }
 
         // Play the walk animation by default
-        if (animator != null)
+        if (animator != null && !string.IsNullOrEmpty(walkAnimation))
         {
             animator.Play(walkAnimation);
         }
@@ -83,7 +83,7 @@ public class GroundEnemy : MonoBehaviour
 
     private void MoveTowardsPlayer()
     {
-        if (animator != null)
+        if (animator != null && !isAttacking && !string.IsNullOrEmpty(walkAnimation))
         {
             animator.Play(walkAnimation);
         }
@@ -100,7 +100,7 @@ public class GroundEnemy : MonoBehaviour
     {
         isAttacking = true;
 
-        if (animator != null)
+        if (animator != null && !string.IsNullOrEmpty(attackAnimation))
         {
             animator.Play(attackAnimation);
         }
@@ -112,7 +112,7 @@ public class GroundEnemy : MonoBehaviour
         attackTimer = attackCooldown;
         isAttacking = false;
 
-        if (animator != null)
+        if (animator != null && !string.IsNullOrEmpty(walkAnimation))
         {
             animator.Play(walkAnimation);
         }
@@ -120,14 +120,26 @@ public class GroundEnemy : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Something entered the attack collider: " + other.name);
+
         if (other.CompareTag(playerTag))
         {
+            Debug.Log("Player entered attack collider.");
             // Inflict damage on the player when within attack collider
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
+                Debug.Log("Player health component found. Inflicting damage.");
                 playerHealth.TakeDamage(damage);
             }
+            else
+            {
+                Debug.Log("Player health component not found.");
+            }
+        }
+        else
+        {
+            Debug.Log("Non-player object entered attack collider: " + other.name);
         }
     }
 
