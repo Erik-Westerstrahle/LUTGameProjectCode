@@ -14,8 +14,13 @@ public class EnemyController : MonoBehaviour
 
         public GameObject chargeMesh; // Reference to the mesh that will become visible during the charge
 
+    public AudioSource audioSource;
+     public AudioClip chargeSound;
+
     private Transform player;
     private Vector3 randomDirection;
+
+     private Vector3 chargeDirection; // Direction the enemy charges (add this)
     private float changeDirectionTime = 2.0f;
     private float timer;
 
@@ -131,10 +136,17 @@ public class EnemyController : MonoBehaviour
             chargeTimer = chargeDuration;
             cooldownTimer = chargeCooldown;  // Start cooldown immediately after charge starts
 
+             // Calculate and store the charge direction
+            chargeDirection = (player.position - transform.position).normalized;
+
                 // Make the charge mesh visible
             if (chargeMesh != null)
             {
                 chargeMesh.SetActive(true);
+            }
+                        if (audioSource != null && chargeSound != null)
+            {
+                audioSource.PlayOneShot(chargeSound);
             }
         }
     }
@@ -146,8 +158,9 @@ public class EnemyController : MonoBehaviour
         chargeTimer -= Time.deltaTime;
 
         // Move towards the player with charge speed
-        Vector3 chargeDirection = (player.position - transform.position).normalized;
-        transform.position += chargeDirection * chargeSpeed * Time.deltaTime;
+     //   Vector3 chargeDirection = (player.position - transform.position).normalized;
+      //  transform.position += chargeDirection * chargeSpeed * Time.deltaTime;
+         transform.position += chargeDirection * chargeSpeed * Time.deltaTime;
 
         // Rotate to face the player
         Quaternion targetRotation = Quaternion.LookRotation(chargeDirection);
