@@ -15,11 +15,16 @@ public class GroundEnemy : MonoBehaviour
     public string attackAnimation = "groundEnemyAttackAnim"; // Name of the attack animation
 
     public BoxCollider attackCollider; // Collider used for detecting attacks
-    public int damage = 1; // Damage to inflict on the player
+    public int damage = 1; // Damage to inlict on the player
+
+    public AudioSource attackAudioSource; // Audio source for playing atack sound
+    public AudioClip attackAudioClip; // Attack sound effect
 
     private Transform player;
     private float attackTimer = 0f;
     private bool isAttacking = false;
+
+        private bool playerInAttackRange = false;
 
     private void Start()
     {
@@ -105,6 +110,13 @@ public class GroundEnemy : MonoBehaviour
             animator.Play(attackAnimation);
         }
 
+            // Play the attack sound
+        if (attackAudioSource != null && attackAudioClip != null)
+        {
+            attackAudioSource.PlayOneShot(attackAudioClip);
+        }
+
+
         // Wait for the attack animation to complete
         yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
 
@@ -118,28 +130,19 @@ public class GroundEnemy : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Something entered the attack collider: " + other.name);
 
-        if (other.CompareTag(playerTag))
+
+        private void OnTriggerStay(Collider other)
+    {
+        if (isAttacking && other.CompareTag(playerTag))
         {
-            Debug.Log("Player entered attack collider.");
+            Debug.Log("Player in attack collider. Inflicting damage.");
             // Inflict damage on the player when within attack collider
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                Debug.Log("Player health component found. Inflicting damage.");
                 playerHealth.TakeDamage(damage);
             }
-            else
-            {
-                Debug.Log("Player health component not found.");
-            }
-        }
-        else
-        {
-            Debug.Log("Non-player object entered attack collider: " + other.name);
         }
     }
 
