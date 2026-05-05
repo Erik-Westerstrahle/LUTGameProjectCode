@@ -11,6 +11,8 @@ public class EnemyControllerProjectileController : MonoBehaviour
     public Transform firePoint; // Point from where the projectile will be fired
     public float shootingInterval = 1.0f; // Time interval between shots
 
+       public AudioSource audioSource; 
+
     //    public Vector3 roamingAreaMin; // Minimum coordinates of the roaming area
   //  public Vector3 roamingAreaMax; // Maximum coordinates of the roaming area
 
@@ -27,6 +29,7 @@ public class EnemyControllerProjectileController : MonoBehaviour
     private float timer;
     private float shootingTimer;
 
+    public AudioClip shootSound;
      private Animator animator; // Reference to the Animator component
 
         private void Start()
@@ -158,7 +161,11 @@ public class EnemyControllerProjectileController : MonoBehaviour
 
            // Reset the attack trigger
             //StartCoroutine(ResetAttackTrigger());
-        } 
+        }
+        if (audioSource != null && shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound);
+        }
 
        
     }
