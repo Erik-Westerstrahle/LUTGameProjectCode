@@ -36,10 +36,10 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("Animator component not found!");
         }
     }
-
+   
     private void Start()
     {
-         if (playAnimationOnSceneLoad && animator != null)
+    if (playAnimationOnSceneLoad && animator != null)
         {
             Debug.Log("Triggering Start animation.");
             animator.SetTrigger("Start");
@@ -56,7 +56,7 @@ public class LevelManager : MonoBehaviour
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
 
-        animator.SetTrigger("Start");
+     //   animator.SetTrigger("Start");
 
         Debug.Log($"Attempting to load next level: {nextSceneIndex}");
 
@@ -69,6 +69,17 @@ public class LevelManager : MonoBehaviour
         {
             Debug.Log("No more levels to load. End of game.");
         }
+
+       if (playAnimationOnSceneLoad && animator != null)
+        {
+            Debug.Log("Triggering Start animation for next level.");
+            animator.SetTrigger("Start");
+            StartCoroutine(LoadSceneAfterAnimation(nextSceneIndex));
+        }
+        else
+        {
+            SceneManager.LoadScene(nextSceneIndex);
+        }
     }
 
     public void RestartLevel()
@@ -77,7 +88,18 @@ public class LevelManager : MonoBehaviour
 
         collectible_script.ResetInitialization(); // Ensure collectible counts are reset on level restart
         collectible_script.ResetCollectibles();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+               if (playAnimationOnSceneLoad && animator != null)
+        {
+            Debug.Log("Triggering Start animation for restart.");
+            animator.SetTrigger("Start");
+            StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetActiveScene().buildIndex));
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     public void LoadLevel(string levelName)
@@ -87,8 +109,20 @@ public class LevelManager : MonoBehaviour
         collectible_script.ResetInitialization(); // Reset initialization flag
         
         SceneManager.LoadScene(levelName);
-        StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetSceneByName(levelName).buildIndex));
+     //   StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetSceneByName(levelName).buildIndex));
         collectible_script.ResetCollectibles(); // Reset counts
+
+
+        if (playAnimationOnSceneLoad && animator != null)
+        {
+            Debug.Log("Triggering Start animation for specific level load.");
+            animator.SetTrigger("Start");
+            StartCoroutine(LoadSceneAfterAnimation(SceneManager.GetSceneByName(levelName).buildIndex));
+        }
+        else
+        {
+           // SceneManager.LoadScene(levelName);
+        }
     }
 
     private IEnumerator LoadSceneAfterAnimation(int sceneIndex)
