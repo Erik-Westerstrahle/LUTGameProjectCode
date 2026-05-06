@@ -14,15 +14,28 @@ public class collectible_script : MonoBehaviour
     private static bool levelInitialized = false;
     private static int previousTotal = 0; // Store the previous total to detect doubling
 
+    public AudioSource audioSource; // Public reference to the AudioSource component
+    public BoxCollider collectibleCollider; // Public reference to the BoxCollider component
+
     void Awake()
     {
         Debug.Log("Collectible Awake called.");
-        
     }
 
     void Start()
     {
         Debug.Log("Collectible OnEnable called.");
+
+        // Ensure the collider is assigned in the Inspector
+        if (collectibleCollider == null)
+        {
+            Debug.LogError("BoxCollider is not assigned to the collectible!");
+        }
+        else
+        {
+            // Ensure the collider is set as a trigger
+            collectibleCollider.isTrigger = true;
+        }
 
         if (!levelInitialized)
         {
@@ -31,12 +44,8 @@ public class collectible_script : MonoBehaviour
             levelInitialized = true; // Ensure this is only done once per level load
         }
 
-     
-
-        
         total++; // Increment total count for each collectible instantiated
         previousTotal = total; // Store the current total for future checks
-        
         
         Debug.Log($"Collectible instantiated. Total now: {total}");
     }
@@ -46,8 +55,22 @@ public class collectible_script : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             Debug.Log("Player collected a collectible.");
+
+          
+            if (audioSource != null)
+            {
+                audioSource.Play();
+            }
+            else
+            {
+                Debug.LogError("AudioSource is not assigned to the collectible!");
+            }
+
+            // Invoke the OnCollected event
             OnCollected?.Invoke();
-            Destroy(gameObject);
+
+            // Destroy the collectible after the sound has finished playing
+            Destroy(gameObject, audioSource != null ? audioSource.clip.length : 0f);
 
             collectedCount++;
             Debug.Log($"Collected count: {collectedCount} / Total: {total}");
