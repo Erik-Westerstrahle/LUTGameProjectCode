@@ -5,8 +5,8 @@ public class LoadingScreenNextLevelLoader : MonoBehaviour
 {
     void Update()
     {
-        // Check if the right mouse button (mouse button 1) is pressed
-        if (Input.GetMouseButtonDown(1))
+        // Check if the right mouse button (spacebar) is pressed
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             LoadNextLevel();
         }
